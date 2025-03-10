@@ -2,7 +2,6 @@
 formatted as `assets/uncombined/ATLAS_NAME/CARD_NAME/CARD_NAME.png`.
 Assumes that it's in `MOD_ROOT/scripts`"""
 
-import collections
 import os
 from textwrap import dedent
 
@@ -10,9 +9,6 @@ import numpy as np
 from math import ceil, floor
 
 from PIL import Image
-
-Dimensions = collections.namedtuple("Dimensions", ("width", "height"))
-Coordinates = collections.namedtuple("Coordinates", ("x", "y"))
 
 max_grid_width = 8
 
@@ -56,7 +52,7 @@ def generate_atlas(atlas_name: str) -> str:
     atlas_image.save(os.path.join(atlas_output_path, atlas_output_filename))
 
     card_positions_as_text = ",\n".join(
-        f'["{name}"] = {{{position[0]}, {position[1]}}}'\
+        f'["{name}"] = {{x={position[0]}, y={position[1]}}}'\
         for name, position\
         in card_positions.items()
     )
