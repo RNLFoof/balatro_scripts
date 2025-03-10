@@ -1,4 +1,5 @@
-"""Stole this from [Cryptid](https://github.com/MathIsFun0/Cryptid/blob/main/assets/1x/resize.py). much love. modified to accept globs.
+"""Stole this from [Cryptid](https://github.com/MathIsFun0/Cryptid/blob/main/assets/1x/resize.py). much love.
+modified to accept globs. (so running `py resize.py *.png` should get everything)
 Generates 2x images from 1x images.
 Assumes that it's in `MOD_ROOT/scripts`"""
 
