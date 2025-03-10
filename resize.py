@@ -1,5 +1,6 @@
-# Stole this from Cryptid. much love
-# modified to accept globs
+"""Stole this from [Cryptid](https://github.com/MathIsFun0/Cryptid/blob/main/assets/1x/resize.py). much love. modified to accept globs.
+Generates 2x images from 1x images.
+Assumes that it's in `MOD_ROOT/scripts`"""
 
 import sys
 from glob import iglob

@@ -1,6 +1,9 @@
+"""Generates atlas images and a Lua script to load them from individual card(presumably) images whose filenames are
+formatted as `assets/uncombined/ATLAS_NAME/CARD_NAME/CARD_NAME.png`
+Assumes that it's in `MOD_ROOT/scripts`"""
+
 import collections
 import os
-from os.path import relpath
 from textwrap import dedent
 
 import numpy as np
