@@ -18,11 +18,26 @@ uncombined_path = os.path.join(assets_path, "uncombined")
 atlas_output_path = os.path.join(assets_path, "1x")
 initialization_file_path = os.path.join(mod_root_directory, "atlases.lua")
 
+def get_immediate_subdirectories(a_dir):
+    return [name for name in os.listdir(a_dir)
+            if os.path.isdir(os.path.join(a_dir, name))]
+
 def generate_atlas(atlas_name: str) -> str:
     """Returns initialization code."""
     atlas_component_path = os.path.join(uncombined_path, atlas_name)
-    card_image_directories = os.listdir(atlas_component_path)  # These don't *have* to be cards, but they *usually* are,
+    card_image_directories = get_immediate_subdirectories(atlas_component_path)  # These don't *have* to be cards, but they *usually* are,
                                             # so I think it makes this more clear (as opposed to just "image filenames")
+    card_image_directories = list(filter(
+        lambda x: os.path.exists(
+            os.path.join(
+                atlas_component_path, 
+                x, 
+                f"{x}.png"
+            )
+        ),
+        card_image_directories
+    ))
+    
     number_of_card_images = len(card_image_directories)
     grid_size = np.array([
         min(number_of_card_images, max_grid_width),
@@ -33,6 +48,9 @@ def generate_atlas(atlas_name: str) -> str:
     card_positions = {}
     for card_image_index, card_image_directory in enumerate(card_image_directories):
         card_image_path = os.path.join(atlas_component_path, card_image_directory, f"{card_image_directory}.png")
+        if not os.path.exists(card_image_path):
+            print(f"No {card_image_path} found, if you care")
+            continue
         card_image = Image.open(card_image_path)
         card_image_size = np.array(card_image.size)
 
@@ -40,7 +58,7 @@ def generate_atlas(atlas_name: str) -> str:
             atlas_image = Image.new("RGBA", tuple(grid_size * card_image_size))
 
         card_grid_placement = np.array([
-            card_image_index // max_grid_width,
+            card_image_index % max_grid_width,
             floor(card_image_index / grid_size[0])
         ])
         card_pixel_placement = card_grid_placement * card_image_size
@@ -52,10 +70,11 @@ def generate_atlas(atlas_name: str) -> str:
     atlas_image.save(os.path.join(atlas_output_path, atlas_output_filename))
 
     card_positions_as_text = ",\n".join(
-        f'["{name}"] = {{x={position[0]}, y={position[1]}}}'\
+        f'{" " * 8}["{name}"] = {{x={position[0]}, y={position[1]}}}'\
         for name, position\
         in card_positions.items()
     )
+    card_positions_as_text = card_positions_as_text[8:]  # Otherwise, the first line is over indented
 
     return dedent(f"""
     --- {atlas_name.upper()} ---
@@ -69,7 +88,7 @@ def generate_atlas(atlas_name: str) -> str:
     
     {atlas_key}_positions = {{
         {
-        card_positions_as_text
+            card_positions_as_text
         }
     }}
     """).strip()
