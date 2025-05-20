@@ -1,0 +1,85 @@
+import json
+from glob import glob
+from pathlib import Path
+from shutil import copy, make_archive, rmtree
+from typing import Dict, Any, Optional
+from zipfile import ZipFile, PyZipFile
+
+RELEASES = Path(".releases")
+TEMP = RELEASES / "temp"
+
+
+def guarantee_path(path: str | Path) -> Path:
+    return Path(path)
+
+
+def get_mod_metadata(mod_root: str | Path = "") -> Optional[Dict[str, Any]]:
+    _mod_root: Path = guarantee_path(mod_root)
+    for json_path in _mod_root.glob("*.json"):
+        json_contents = json.loads(json_path.read_text())
+        if "id" not in json_contents:
+            continue
+        if json_path.stem == json_contents["id"]:
+            return json_contents
+    return None
+
+
+def is_directory_mod_root(directory: str | Path = "") -> bool:
+    return get_mod_metadata(directory) is not None
+
+
+def get_mod_root(relative_to: str | Path = ""):
+    _relative_to: Path = guarantee_path(relative_to)
+    for check in [
+        _relative_to,
+        _relative_to / "../"
+    ]:
+        if is_directory_mod_root(check):
+            return check
+    raise ValueError("Unable to find mod root from given location.")
+
+
+def get_files_to_include_in_release(relative_to: Path | str):
+    _relative_to: Path = guarantee_path(relative_to)
+    mod_root = get_mod_root(_relative_to)
+    output = set([path for path in mod_root.glob("**/*?.*")])
+    for exclude in [
+        ".*/**/*",
+        "**/.*/**/*",
+        "**/*.yue",
+        "assets/uncombined/**/*",
+        "scripts/**/*",
+    ]:
+        to_remove = set([x for x in mod_root.glob(exclude)])
+        output -= to_remove
+    return output
+
+
+def generate_release(relative_to: str | Path = ""):
+    _relative_to: Path = guarantee_path(relative_to)
+    mod_root = get_mod_root(_relative_to)
+    mod_metadata = get_mod_metadata(mod_root)
+    release_name = f"{mod_metadata['id']}_v{mod_metadata['version']}"
+    to_copy = get_files_to_include_in_release(mod_root)
+
+    try:
+        for source in to_copy:
+            if source.is_dir():
+                print(f"Huh, {source} is a directory?")
+                continue
+            destination = mod_root / TEMP / release_name / source.relative_to(mod_root)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            copy(source, destination)
+
+        make_archive(str(mod_root / RELEASES / release_name), 'zip', mod_root / TEMP)
+    except Exception as e:
+        raise e
+    finally:
+        rmtree(mod_root / TEMP)
+
+    print(f"Release saved to {(mod_root / RELEASES / release_name).relative_to(mod_root).absolute()}.zip")
+
+
+
+if __name__ == "__main__":
+    generate_release()
