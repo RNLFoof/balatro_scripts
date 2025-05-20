@@ -1,9 +1,10 @@
+"""Generates a zip file containing only the files necessary to run the mod.
+That is, excludes files only needed for development."""
+
 import json
-from glob import glob
 from pathlib import Path
 from shutil import copy, make_archive, rmtree
 from typing import Dict, Any, Optional
-from zipfile import ZipFile, PyZipFile
 
 RELEASES = Path(".releases")
 TEMP = RELEASES / "temp"
