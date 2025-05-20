@@ -105,7 +105,6 @@ def generate_atlas(atlas_name: str) -> str:
     def traverse_tree_and_make_jsonable(working, indent=2):  # I swear 2 is correct. trust me
         for key, value in working.items():
             card_positions_as_texts[-1] += "    " * indent + f'["{key}"]'
-            print(value)
             if type(value) is dict:
                 card_positions_as_texts[-1] += " = {"
                 indent += 1
