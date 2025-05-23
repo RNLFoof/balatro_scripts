@@ -2,9 +2,12 @@
 That is, excludes files only needed for development."""
 
 import json
+from os.path import normpath
 from pathlib import Path
 from shutil import copy, make_archive, rmtree
 from typing import Dict, Any, Optional
+
+from internal import ansi
 
 RELEASES = Path(".releases")
 TEMP = RELEASES / "temp"
@@ -44,15 +47,29 @@ def get_files_to_include_in_release(relative_to: Path | str):
     _relative_to: Path = guarantee_path(relative_to)
     mod_root = get_mod_root(_relative_to)
     output = set([path for path in mod_root.glob("**/*?.*")])
+    removed = set()
     for exclude in [
         ".*/**/*",
         "**/.*/**/*",
         "**/*.yue",
+        "**/*test*",
         "assets/uncombined/**/*",
         "scripts/**/*",
     ]:
         to_remove = set([x for x in mod_root.glob(exclude)])
         output -= to_remove
+        removed |= to_remove
+
+    worrying_removals = [
+        removed_item
+        for removed_item
+        in removed
+        if str(removed_item).endswith(".lua")
+    ]
+    if worrying_removals:
+        print("The following files weren't added to the release, and are worth looking over if you're a human:")
+        print("\n".join([f"...{ansi.OKBLUE}\\{worrying_removal.resolve().relative_to((mod_root / '..').resolve())}{ansi.ENDC}" for worrying_removal in worrying_removals]))
+
     return output
 
 
@@ -78,7 +95,8 @@ def generate_release(relative_to: str | Path = ""):
     finally:
         rmtree(mod_root / TEMP)
 
-    print(f"Release saved to {(mod_root / RELEASES / release_name).relative_to(mod_root).absolute()}.zip")
+    saved_at = (mod_root.absolute() / RELEASES / (release_name+".zip")).resolve().relative_to((mod_root / '..').resolve())
+    print(f"Release saved to {ansi.OKBLUE}{saved_at}{ansi.ENDC}")
 
 
 
