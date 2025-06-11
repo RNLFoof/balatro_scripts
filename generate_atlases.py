@@ -5,7 +5,6 @@ formatted as `assets/uncombined/ATLAS_NAME/CARD_NAME/CARD_NAME.png` or
 Assumes that it's in `MOD_ROOT/scripts`."""
 
 import os
-import json
 from textwrap import dedent
 
 import numpy as np
@@ -21,25 +20,28 @@ UNCOMBINED_PATH = os.path.join(ASSETS_PATH, "uncombined")
 ATLAS_OUTPUT_PATH = os.path.join(ASSETS_PATH, "1x")
 INITIALIZATION_FILE_PATH = os.path.join(MOD_ROOT_DIRECTORY, "atlases.lua")
 
+
 def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir)
             if os.path.isdir(os.path.join(a_dir, name))]
 
+
 def card_images_within(atlas_name):
     atlas_component_path = os.path.join(UNCOMBINED_PATH, atlas_name)
-    card_image_directories = get_immediate_subdirectories(atlas_component_path)  # These don't *have* to be cards, but they *usually* are,
+    card_image_directories = get_immediate_subdirectories(atlas_component_path)  # These don't *have* to be cards,
+                                            # but they *usually* are,
                                             # so I think it makes this more clear (as opposed to just "image filenames")
     card_image_directories = list(filter(
         lambda x: os.path.exists(
             os.path.join(
-                atlas_component_path, 
-                x, 
+                atlas_component_path,
+                x,
                 f"{x}.png"
             )
         ) or os.path.exists(
             os.path.join(
-                atlas_component_path, 
-                x, 
+                atlas_component_path,
+                x,
                 x
             )
         ),
@@ -60,10 +62,11 @@ def card_images_within(atlas_name):
                     card_image_path = os.path.join(atlas_component_path, card_image_directory, card_image_directory, image)
                     yield card_image_key_path, card_image_path
                     found_anything = True
-        
+
         if not found_anything:
             print(f"No usable images found in {card_image_directory}, if you care")
             continue
+
 
 def generate_atlas(atlas_name: str) -> str:
     """Returns initialization code."""
@@ -104,6 +107,7 @@ def generate_atlas(atlas_name: str) -> str:
     atlas_output_filename = f"{atlas_key}.png"
     atlas_image.save(os.path.join(ATLAS_OUTPUT_PATH, atlas_output_filename))
     card_positions_as_texts = [""]
+
     def traverse_tree_and_make_jsonable(working, indent=2):  # I swear 2 is correct. trust me
         for key, value in working.items():
             card_positions_as_texts[-1] += "    " * indent + f'["{key}"]'
@@ -145,6 +149,7 @@ def generate_atlas(atlas_name: str) -> str:
     }}
     """).strip()
 
+
 def generate_atlases():
     initialization_code_snippets = []
 
@@ -164,6 +169,7 @@ def generate_atlases():
 
     with open(INITIALIZATION_FILE_PATH, "w") as initialization_file:
         initialization_file.write("\n\n".join(initialization_code_snippets))
+
 
 if __name__ == "__main__":
     generate_atlases()
