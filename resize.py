@@ -6,10 +6,14 @@ Assumes that it's in `MOD_ROOT/scripts`"""
 
 import sys
 from glob import iglob
+from pathlib import Path
 
 from PIL import Image
 import os
 import time
+
+from internal.misc import ensure_path
+
 
 def upscale_pixel_art(input_image, output_directory, input_image_path):
     # Double the size
@@ -21,6 +25,17 @@ def upscale_pixel_art(input_image, output_directory, input_image_path):
     output_image_path = os.path.join(output_directory, filename)
     resized_image.save(output_image_path)
 
+
+@ensure_path
+def upscale_pixel_art_at(input_image_filename: Path | str):
+    input_image_filename: Path
+    print(f"Resizing {input_image_filename.name}...")
+    input_image = Image.open(input_image_filename)
+
+    output_directory = os.path.join(input_image_filename, "../../2x/")
+    upscale_pixel_art(input_image, output_directory, input_image_filename)
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: py resize.py <input_image>")
@@ -30,12 +45,8 @@ if __name__ == "__main__":
     did_anything = False
     for filename in iglob(sys.argv[1], root_dir=input_directory):
         did_anything = True
-        print(f"Resizing {filename}...")
-        input_image_path = os.path.join(input_directory, filename)
-        input_image = Image.open(input_image_path)
-
-        output_directory = os.path.join(input_directory, "../2x/")
-        upscale_pixel_art(input_image, output_directory, input_image_path)
+        input_image_filename = os.path.join(input_directory, filename)
+        upscale_pixel_art_at(input_image_filename)
 
     if did_anything:
         print("Done! :)")
