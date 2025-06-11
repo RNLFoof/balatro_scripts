@@ -68,7 +68,9 @@ def get_files_to_include_in_release(relative_to: Path | str):
     ]
     if worrying_removals:
         print("The following files weren't added to the release, and are worth looking over if you're a human:")
-        print("\n".join([f"...{ansi.OKBLUE}\\{worrying_removal.resolve().relative_to((mod_root / '..').resolve())}{ansi.ENDC}" for worrying_removal in worrying_removals]))
+        print("\n".join(
+            [f"...{ansi.OKBLUE}\\{worrying_removal.resolve().relative_to((mod_root / '..').resolve())}{ansi.ENDC}" for
+             worrying_removal in worrying_removals]))
 
     return output
 
@@ -95,9 +97,9 @@ def generate_release(relative_to: str | Path = ""):
     finally:
         rmtree(mod_root / TEMP)
 
-    saved_at = (mod_root.absolute() / RELEASES / (release_name+".zip")).resolve().relative_to((mod_root / '..').resolve())
+    saved_at = (mod_root.absolute() / RELEASES / (release_name + ".zip")).resolve().relative_to(
+        (mod_root / '..').resolve())
     print(f"Release saved to {ansi.OKBLUE}{saved_at}{ansi.ENDC}")
-
 
 
 if __name__ == "__main__":
